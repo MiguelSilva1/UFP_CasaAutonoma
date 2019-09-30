@@ -1,0 +1,35 @@
+ DateTime Date  "Date [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]" { channel="ntp:ntp:demo:dateTime" }
+
+
+Group Temperatura
+Number Temperatura_Exterior "Temperatura Exterior [%.2f °C]"  <Temperature> (Temperatura)  { weather="locationId=home-FIO, type=temperature, property=current"}
+/*Item para verificar a temperatura para o sensor */
+String   Temperatura_Interior "Temperatura Interior [%s ºC]"<Temperature> (Temperatura) /*{serial="COM3"}*/
+Switch Test
+ 
+
+
+/*Controlo dos Animais*/
+
+Number Quantidade_racao "Quantidade de racao [gramas] %d"
+DateTime Track_Refeicao "Última Refeição [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]"
+Number Track_X_Refeicao "Número de Refeições por dia [%d]"
+Switch AnimaisSwitch
+DateTime Track_agua "Última Atualização do Volume da água [%1$tA, %1$td.%1$tm.%1$tY %1$tH:%1$tM]"
+Switch AguaSwitch
+
+
+
+
+
+
+
+
+
+
+
+
+
+//ARDUINO
+//String Distancia "[%d]" (arduino) {serial="COM3"}
+//Switch Test //"LUZ" (arduino) {serial="COM3@9600"}

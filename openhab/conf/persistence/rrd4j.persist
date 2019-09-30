@@ -1,0 +1,14 @@
+Strategies {
+    everyTenMin:  "0 0/10 * 1/1 * ? *"
+    everyMinute: 	"0 0/1 * 1/1 * ? *"
+
+  //default = everyChange  
+  // if no strategy is specified for an Item entry below, the default list will be used
+}
+
+Items {
+    Temperatura_Interior : strategy = everyChange, everyMinute,restoreOnStartup
+    Temperatura_Exterior : strategy = everyChange, everyTenMinute,restoreOnStartup
+    Track_Refeicao : strategy = restoreOnStartup
+
+}

@@ -1,0 +1,41 @@
+//Iluminação
+Group gIluminacao
+Switch IluminacaoAutomatica (gIluminacao)
+String PessoasPresentes (gIluminacao)
+String LuminosidadeExterior (gIluminacao) 
+String Persiana (gIluminacao) //{serial="COM3"}
+String Lampada (gIluminacao) {serial="COM4"}
+
+
+//Iluminação - Regra Acordar
+Group gHoraSemana
+Switch	horaSegunda "Segunda" <switch> (gHoraSemana)
+Switch	horaTerca "Terca" <switch> (gHoraSemana)
+Switch	horaQuarta "Quarta" <switch> (gHoraSemana)
+Switch	horaQuinta "Quinta" <switch> (gHoraSemana)
+Switch	horaSexta "Sexta" <switch> (gHoraSemana)
+Switch	horaSabado "Sabado" <switch> (gHoraSemana)
+Switch	horaDomingo "Domingo" <switch> (gHoraSemana)
+
+Group gHoraHoras
+String horaMensagem "%s"
+Number horaHora "Hora [%d]" <clock> (gHoraHoras)
+Number horaMinuto "Minuto [%d]" <clock> (gHoraHoras)
+
+
+//Rega
+Group gRega
+Switch RegaAutomatica (gRega)
+Number Precipitacao (gRega) {weather="locationId=home-FIO, forecast=0, type=precipitation, property=rain"}
+String Humidade (gRega)
+Switch Aspersor (gRega)
+
+
+//Previsão
+Number TemperaturaMinima {weather="locationId=home-FIO, forecast=0, type=temperature, property=min"}
+Number TemperaturaMaxima {weather="locationId=home-FIO, forecast=0, type=temperature, property=max"}
+Number VelocidadeVento {weather="locationId=home-FIO, forecast=0, type=wind, property=speed"}
+
+//Localização app
+String Latidude
+String Longitude

@@ -1,0 +1,102 @@
+rule "Animal Rules ON"
+
+when 
+Item AnimaisSwitch received update
+
+then    
+         if(AnimaisSwitch.state == ON) { 
+         sendCommand(Track_X_Refeicao, 0)
+        //logInfo("Label", "Item:\"" + Track_Refeicao.name + "\" state:\"" +  Track_Refeicao.state + "\"" )
+        //logInfo("Animais","Animais On")       
+      }
+end
+
+/*Timer para a Refeição - Almoço e Jantar*/
+/*At 15:30:00pm, every day between Monday and Friday, every month*/
+
+rule "Timer Almoco"
+
+when 
+        Time cron "0 30 15 ? * MON-FRI"
+
+then      
+        sendCommand(Quantidade_racao, Integer.valueOf(Quantidade_racao.state.toString) - 100)        
+        /*Fazer a contagem das refeicoes*/     
+       sendCommand(Track_X_Refeicao, Integer.valueOf(Track_X_Refeicao.state.toString) + 1)
+             
+        logInfo("Label", "Item:\"" + Track_X_Refeicao.name + "\" state:\"" +  Track_X_Refeicao.state + "\"" )
+        logInfo("Label", "Item:\"" + Track_Refeicao.name + "\" state:\"" +  Track_Refeicao.state + "\"" )
+          
+      
+end 
+
+/*At 22:30:00pm, every day between Monday and Friday, every month*/
+rule "Timer Jantar"
+
+when  Time cron "0 30 22 ? * MON-FRI"  
+
+
+then 
+
+        sendCommand(Quantidade_racao, Integer.valueOf(Quantidade_racao.state.toString) - 100)        
+        /*Fazer a contagem das refeicoes*/     
+       sendCommand(Track_X_Refeicao, Integer.valueOf(Track_X_Refeicao.state.toString) + 1)
+             
+        logInfo("Label", "Item:\"" + Track_X_Refeicao.name + "\" state:\"" +  Track_X_Refeicao.state + "\"" )
+        logInfo("Label", "Item:\"" + Track_Refeicao.name + "\" state:\"" +  Track_Refeicao.state + "\"" )
+        
+
+
+
+
+end
+
+rule "LastUpdateComida"
+when
+  Item AnimaisSwitch received update
+then
+  Track_Refeicao.postUpdate(new DateTimeType() )
+end
+
+
+rule "Alerta quantidade"
+
+when Item Quantidade_racao received update
+
+then 
+/*Assumindo que o utilizador coloca 100 gramas por dia*/
+    if(Integer.valueOf(Quantidade_racao.state.toString) <=  50) {
+
+        /*Avisa o utilizador que está acabar */
+        /*Alerta aqui!*/
+        logInfo("Animal ALerta", "Baixa de Comida") 
+       //sendMail("casainteligentelpji@gmail.com", "Notificação: Baixa na ração do animal", "Baixa" + Quantidade_racao.state + " g ");
+          
+    }
+    /*Assumindo que o utilizador coloca 200/300 gramas por dia*/
+    if(Integer.valueOf(Quantidade_racao.state.toString)> 50  && Integer.valueOf(Quantidade_racao.state.toString) <= 110) {
+
+        logInfo("Animal Alerta", "Baixa de Comida")
+        //sendMail("casainteligentelpji@gmail.com", "Notificação: Baixa na ração do animal", "Baixa" + Quantidade_racao.state + " g ");
+       
+    
+    }
+    /*Assumindo que o utilizador coloca 400 gramas por dia*/
+    if(Integer.valueOf(Quantidade_racao.state.toString) > 120 && Integer.valueOf(Quantidade_racao.state.toString) <=200) {
+
+           logInfo("Animal Alerta", "Baixa de Comida")
+           //sendMail("casainteligentelpji@gmail.com", "Notificação: Baixa na ração do animal", "Baixa" + Quantidade_racao.state + " g ");
+       
+    }
+
+end
+
+/*Rule água!!!!*/
+
+
+rule "LastUpdateAgua"
+when
+  Item AguaSwitch received update
+then
+  Track_agua.postUpdate(new DateTimeType() )
+end

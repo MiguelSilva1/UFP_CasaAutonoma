@@ -1,0 +1,7 @@
+Strategies {
+}
+ 
+Items {
+   gHoraSemana*: strategy = everyChange, restoreOnStartup
+   gHoraHoras*: strategy = everyChange, restoreOnStartup
+}

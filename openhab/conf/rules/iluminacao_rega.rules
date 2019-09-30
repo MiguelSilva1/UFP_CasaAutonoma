@@ -1,0 +1,165 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+import org.openhab.action.squeezebox.*
+import java.util.concurrent.locks.ReentrantLock
+var Timer timer1 = null
+var	Timer TimerRega = null
+var java.util.concurrent.locks.ReentrantLock lock1 = new java.util.concurrent.locks.ReentrantLock()
+
+//Valores Iniciais
+//LuminosidadeExterior: 0-???Lux (0-sem luz)
+//Lampada: 0-100% (0-desligada)
+//Persiana: 0-100% (0-aberta)
+rule "Init"
+when
+    System started
+then
+    //Regras Iluminação
+    if(IluminacaoAutomatica.state == NULL) IluminacaoAutomatica.postUpdate(ON)
+    if(PessoasPresentes.state == NULL) PessoasPresentes.postUpdate(0)
+    if(LuminosidadeExterior.state == NULL) LuminosidadeExterior.postUpdate(0)
+    if(Persiana.state == NULL) Persiana.postUpdate(0)
+    if(Lampada.state == NULL) Lampada.postUpdate(0)
+    
+    //Regra Acordar
+    if(horaHora.state == NULL) postUpdate(horaHora, 0)
+    if(horaMinuto.state == NULL) postUpdate(horaMinuto, 00)
+    if(horaSegunda.state == NULL) postUpdate(horaSegunda, ON)
+    if(horaTerca.state == NULL) postUpdate(horaTerca, ON)
+    if(horaQuarta.state == NULL) postUpdate(horaQuarta, ON)
+    if(horaQuinta.state == NULL) postUpdate(horaQuinta, ON)
+    if(horaSexta.state == NULL) postUpdate(horaSexta, ON)
+    if(horaSabado.state == NULL) postUpdate(horaSabado, OFF)
+    if(horaDomingo.state == NULL) postUpdate(horaDomingo, OFF)
+
+    //Regra Rega
+    if(RegaAutomatica.state == NULL) RegaAutomatica.postUpdate(ON)
+    if(Precipitacao.state == NULL) Precipitacao.postUpdate(0)
+    if(Humidade.state == NULL) Humidade.postUpdate(0)
+    if(Aspersor.state == NULL) Aspersor.postUpdate(OFF)
+end
+
+/*
+pessoas_presentes	| muita_luminosidade_exterior	-> abre_persiana/desliga_lampada
+				    | pouca_luminosidade_exterior	-> fecha_persiana/liga_lampada
+
+pessoas_ausentes	| muita_luminosidade_exterior	-> abre_persiana/desliga_lampada
+				    | pouca_luminosidade_exterior	-> fecha_persiana/desliga_lampada
+*/
+rule "Luminosidade"
+when
+    Item IluminacaoAutomatica received update
+    or Item PessoasPresentes received update
+    or Item LuminosidadeExterior received update
+    or Item IluminacaoAutomatica received update
+then
+    if(IluminacaoAutomatica.state == ON){
+        if(Integer.valueOf(PessoasPresentes.state.toString) > 0) {
+            if(Integer.valueOf(LuminosidadeExterior.state.toString) > 90){
+                Persiana.postUpdate(0)
+                Lampada.postUpdate(0)
+            }
+            else {
+                Persiana.postUpdate(100)
+                Lampada.postUpdate(100)
+            }
+        }
+        else {
+            if(Integer.valueOf(LuminosidadeExterior.state.toString) > 90){
+                Persiana.postUpdate(0)
+                Lampada.postUpdate(0)
+            }
+            else {
+                Persiana.postUpdate(100)
+                Lampada.postUpdate(0)
+            }
+        }
+    }
+end
+
+rule "Dormir"
+when
+    Item IluminacaoAutomatica received update
+then
+    if(IluminacaoAutomatica.state == OFF){
+        Persiana.postUpdate(100)
+        Lampada.postUpdate(0)
+    }
+end
+
+rule "Acordar"
+when
+    System started or
+	Item horaHora changed or 
+	Item horaMinuto changed
+then
+    lock1.lock()
+    try {
+        var String msg = ""
+        var hora = horaHora.state as DecimalType
+        var minuto = horaMinuto.state as DecimalType
+
+        if (hora < 10) { msg = "0" } 
+        msg = msg + horaHora.state.format("%d") + ":"
+    
+        if (minuto < 10) { msg = msg + "0" }
+        msg = msg + horaMinuto.state.format("%d")
+        postUpdate(horaMensagem,msg)
+
+        var int alarme1
+        alarme1 = (horaHora.state as DecimalType).intValue * 60 + 
+                (horaMinuto.state as DecimalType).intValue
+        alarme1 = alarme1.intValue
+
+        var int agora1
+        agora1 = now.getMinuteOfDay
+        agora1 = agora1.intValue
+
+        var int delta1
+        delta1 = (alarme1 - agora1)
+        delta1 = delta1.intValue
+
+        if (agora1 > alarme1) { delta1 = delta1 + 1440 }
+
+        if (timer1 != null) {
+            timer1.cancel
+            timer1 = null
+        }
+
+        timer1 = createTimer(now.plusMinutes(delta1)) [|
+            var Number day = now.getDayOfWeek
+            if (((day == 1) && (horaSegunda.state == ON))     ||
+                ((day == 2) && (horaTerca.state == ON))   ||
+                ((day == 3) && (horaQuarta.state == ON))   ||
+                ((day == 4) && (horaQuinta.state == ON)) ||
+                ((day == 5) && (horaSexta.state == ON))    ||
+                ((day == 6) && (horaSabado.state == ON))    ||
+                ((day == 7) && (horaDomingo.state == ON))) {
+                    IluminacaoAutomatica.postUpdate(ON)
+					playSound("doorbell.mp3")
+            }
+            timer1.reschedule(now.plusHours(24))
+        ]
+    } finally  {
+        lock1.unlock()
+    }
+end
+
+rule "Rega"
+when
+	Time cron "0 0 0 1/1 * ? *" //Todos os dias à meia-noite
+then
+    if(RegaAutomatica.state == ON) {
+        if(Precipitacao.state < 5) { //chuva fraca < 5mm/h
+            if(Integer.valueOf(Humidade.state.toString) < 1){
+                Aspersor.postUpdate(ON) //Liga aspersor
+                TimerRega = createTimer(now.plusMinutes(5)) //Espera 5 minutos
+                [|
+                    Aspersor.postUpdate(OFF) //Desliga aspersor
+                    TimerRega = null
+                ]
+            }
+        }
+    }
+end

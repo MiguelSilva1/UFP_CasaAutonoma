@@ -1,0 +1,35 @@
+sitemap iluminacao_rega label="Iluminação e Rega" {
+    Frame label="Iluminação" {
+        Switch item=IluminacaoAutomatica label="Iluminação Automática"
+        Text item=PessoasPresentes label="Pessoas presentes na divisão: [%s]" icon="parents_1_1"
+        Text item=LuminosidadeExterior label="Nível de luminosidade exterior: [%s Lux]" icon="light"
+        Text item=Persiana label="Persiana: [%s%%]" icon="rollershutter"
+        Text item=Lampada label="Lampada: [%s%%]" icon="light"
+    }
+    Frame label="Acordar" {
+        Text label="Acordar [%s]" item=horaMensagem icon="clock" {
+            Frame label="Horas" {
+                Setpoint item=horaHora minValue=0 maxValue=23 step=1
+                Setpoint item=horaMinuto minValue=0 maxValue=55 step=5
+            }
+            Frame label="Dias da Semana" {
+                Switch item=horaSegunda
+                Switch item=horaTerca
+                Switch item=horaQuarta
+                Switch item=horaQuinta
+                Switch item=horaSexta
+                Switch item=horaSabado
+                Switch item=horaDomingo
+            }
+        }
+    }
+    Frame label="Rega" {
+        Switch item=RegaAutomatica label="Rega Automática"
+        Text item=Precipitacao label="Precipitacao [%.2f mm/h]" icon="rain"
+        Text item=Humidade label="Humidade: [%s]" icon="humidity"
+        Switch item=Aspersor label="Aspersor" icon="faucet"
+        Text item=TemperaturaMinima label="Temperatura Mínima Prevista[%.2f ºC]" icon="temperature"
+        Text item=TemperaturaMaxima label="Temperatura Máxima Prevista[%.2f ºC]" icon="temperature"
+        Text item=VelocidadeVento label="Velocidade Vento [%.2f Km/h]" icon="wind"
+    }
+}

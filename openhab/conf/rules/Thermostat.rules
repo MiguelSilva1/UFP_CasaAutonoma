@@ -1,0 +1,90 @@
+/*Inicio manual do sensor da temperatura por pedidos http
+quando o sistema é iniciado*/
+
+rule "Http Temperatura ON"
+
+when System started
+
+then 
+
+if(Test.state == null) {
+   
+   //Test.postUpdate(ON)
+   sendHttpPutRequest("http://localhost:8080/basicui/CMD?Test=ON") 
+   LastUpdateCheck=Date.lastUpdate()
+}
+end
+
+/*Termino manual do sensor da temperatura por pedidos http
+quando o sistema é desligado*/
+
+rule "Http Temperatura OFF"
+
+when System shuts down
+
+then 
+
+if(Test.state == null) {
+   
+   //Test.postUpdate(OFF)
+   sendHttpPutRequest("http://localhost:8080/basicui/CMD?Test=OFF")
+}
+end
+
+/*Inicio automatico*/
+
+rule "Init"
+when
+    System started
+then
+    if(Test.state == NULL) 
+    
+    Test.postUpdate(ON)  
+    
+end
+
+/*Regularização da Temperatura. O sistema quando é iniciado, é lhe atribuido uma temperante (ambiente) 
+interior de 22 graus. No entanto, o utilizador poderá mudar, caso pretenda.*/
+
+rule "Thermosat Rules ON"
+
+when 
+Item Test changed
+
+then    
+         if(Test.state == ON) { 
+         sendCommand(Temperatura_Interior, 22) 
+          //sendHttpPostRequest("URL", "contentType", "content")
+       //sendMail("casainteligentelpji@gmail.com", "Notificação: Temperatura no primeiro Andar", "Temperatura: "+Temperatura_Interior.state+"ºC") 
+      }
+      logInfo("Thermosat","Thermosat On")
+
+end
+
+/*Regularização da Temperatura.Quando o sistema é desligado, a temperatura ambiente ronda os 20 graus.*/
+rule "Thermosat Rules OFF"
+
+when 
+Item Test changed
+
+then    
+      if(Test.state == OFF) {
+
+         sendCommand(Temperatura_Interior, 20)    
+        //sendHttpPostRequest("URL", "contentType", "content")
+       //sendMail("casainteligentelpji@gmail.com", "Notificação: Temperatura no primeiro Andar", "Temperatura: "+Temperatura_Interior.state+"ºC")
+
+   }
+   logInfo("Thermosat","Thermosat OFF")
+
+end
+
+/*How to display temperatures in a given period - Persistence*/
+
+
+rule "Temperature Average"
+when
+    Item Temperatura_Exterior received update
+then
+    Temperatura_Exterior.postUpdate(Temperatura_Exterior.averageSince(now.minusHours(6)))
+end

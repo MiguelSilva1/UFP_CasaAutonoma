@@ -1,0 +1,48 @@
+sitemap demo label="My home automation" {
+
+        Frame label="Data" {
+        Text item=Date icon="time"
+       
+    }
+    
+    Frame label="Primeiro Andar" {
+    Switch item=Test
+    Group item=Temperatura icon="Temperature"
+    
+    }
+    Frame label="Gráficos" {
+
+    //Setpoint item=Temperatura_Interior label="Temperatura Interior [%.2f °C]" minValue=20 maxValue=30 step=0.5
+    Chart item=Temperatura period=h refresh=200 legend=true
+    //Setpoint item=Temperatura_Exterior label="Temperatura Exterior [%.2f °C]" minValue=10 maxValue=30 step=0.5
+    }
+
+     Frame label="Cuidado de Animais" {
+        
+    Switch item=AnimaisSwitch
+    Setpoint item=Quantidade_racao label="Quantidade de Ração diária [%d gramas]" minValue=0 maxValue=250 step=10
+    Text item=Track_Refeicao  icon="calendar"
+    Text item=Track_X_Refeicao 
+    Switch item=AguaSwitch
+    Text item=Track_agua icon="calendar"
+
+    
+    }
+
+
+
+
+    
+
+
+
+
+     
+
+    /*CHARTS_TEMPERATURE*/
+    //Chart [item=<itemname>] [icon="<iconname>"] [label="<labelname>"] [refresh=xxxx]
+    //[period=xxxx] [service="<service>"] [begin=yyyyMMddHHmm] [end=yyyyMMddHHmm] [legend=true/false]        
+    
+
+}
+
